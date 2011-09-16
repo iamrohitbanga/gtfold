@@ -38,7 +38,7 @@
 #include "energy.h"
 #include "algorithms.h"
 #include "algorithms-partition.h"
-#include "partition-dangle.h"
+#include "partition-func.h"
 #include "constraints.h"
 #include "traceback.h"
 #include "subopt_traceback.h"
@@ -282,6 +282,15 @@ int main(int argc, char** argv) {
 									readThermodynamicParameters(paramDir.c_str(), PARAM_DIR, UNAMODE, RNAMODE, T_MISMATCH);
 
 	printRunConfiguration(seq);
+
+  if (CALC_PART_FUNC == true)
+  {
+    printf("\nComputing partition function...\n");
+    calculate_partition(seq.length());
+    free_partition();
+    free_fold(seq.length());
+    exit(0);
+  }
 
 	printf("\nComputing minimum free energy structure...\n");
 	fflush(stdout);

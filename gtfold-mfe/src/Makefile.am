@@ -18,6 +18,7 @@ gtfold_SOURCES = \
 	subopt_traceback.cc\
 	algorithms-partition.c\
 	partition-dangle.c\
+	partition-func.c\
 	random-sample.cc\
 	shapereader.cc
 

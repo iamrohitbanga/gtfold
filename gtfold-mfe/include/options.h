@@ -22,6 +22,7 @@ extern bool PARAM_DIR;
 extern bool T_MISMATCH;
 extern bool UNAMODE;
 extern bool RNAMODE;
+extern bool CALC_PART_FUNC;
 
 extern string seqfile;
 extern string constraintsFile;
