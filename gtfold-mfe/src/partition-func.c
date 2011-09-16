@@ -90,17 +90,21 @@ void fill_partition_arrays()
   for(b=TURN+1; b<n; ++b){
     for(i=1; i<=n-b; ++i){
       int j=i+b;
+      
+      // Auxillary array
       calc_s1(i,j);
       calc_s2(i,j);
       calc_s3(i,j);
-      /*
-      calc_u1d(i,j);
-      calc_u1(i,j);
+      
+      if (j < n) { // handled boundary condition
+        calc_u1d(i,j);
+        calc_u1(i,j);
+      }
+
       calc_upm(i,j);
       calc_up(i,j);
       calc_ud(i,j);
       calc_u(i,j);
-      */
     }
   }
 }
@@ -212,11 +216,10 @@ void calc_u1d(int i, int j){
 	int l;
 
 	for(l=i+1; l<=j; ++l){
-    if (l > part_len-2) continue;
 		p_val += (up[i][l]*exp((-1)*(c+auPenalty(i,l))/RT) * (f(j+1,i,l)*exp((-1)*(j-l)*b/RT) + exp((-1)*(Ed3(i,l,l+1)+b)/RT)*u1[l+2][j] + u1d[l+1][j]));
 	}
 
-	u1d[l+1][j] = p_val;
+	u1d[i][j] = p_val;
 }
 
 void calc_u(int i, int j)
