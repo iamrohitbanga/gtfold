@@ -1,7 +1,37 @@
+#include <stdio.h>
 #include "partition-func.h"
 #include "energy.h"
 #include "algorithms-partition.h"
+#include "global.h"
+#include "utils.h"
 
+#ifdef _OPENMP 
+#include "omp.h"
+#endif
+
+#define DEBUG_PF 1
+
+#ifdef DEBUG_PF 
+  #undef Ec
+  #undef Eb
+  #undef Ea
+  #define Ec 0
+  #define Eb 0
+  #define Ea 0
+  #define eS StackE
+  #define eH HairE
+  #define eL ILoopE
+  #define Ed3 D3
+  #define Ed5 D5
+  #define auPenalty Etp
+#endif
+
+int StackE(int i, int j) { return 0; }
+int HairE(int i, int j) { return 0; }
+int ILoopE(int i, int j, int ip, int jp) { return 0; }
+int D3(int i, int j, int k) { return 0; } 
+int D5(int i, int j, int k) { return 0; }
+int Etp(int i, int j) { return 0; }
 
 double ** u;
 double ** up;
@@ -42,10 +72,20 @@ double f(int j, int h, int l){
 
 void calculate_partition(int len) 
 {
+  int i, j;
   part_len = len;
   create_partition_arrays();
   init_partition_arrays();
   fill_partition_arrays();
+
+  for (i = 0; i <= part_len+1; ++i) 
+  {
+    for (j = 0; j <= part_len+1; ++j)
+      printf("%0.1f ",u[i][j]);
+    printf("\n");
+  }
+
+  printf("%4.4f\n",u[1][part_len]);
 }
 
 void free_partition()
@@ -53,8 +93,29 @@ void free_partition()
   free_partition_arrays();
 }
 
+void init_part_arrays_zeros(){
+  int i,j,n;
+  n = part_len+1;
+  for(i=0; i<=n; ++i){
+    for(j=0; j<=n; ++j){
+      u[i][j]=0;
+      up[i][j]=0;
+      upm[i][j]=0;
+      ud[i][j]=0;
+      u1d[i][j]=0;
+
+      s1[i][j]=0;
+      s2[i][j]=0;
+      s3[i][j]=0;
+      u1[i][j]=0;
+    }
+  }
+}
+
 void init_partition_arrays()
 {
+  init_part_arrays_zeros();
+
   int i, j;							
   int n = part_len;
   for(i=1; i<=n-3; ++i){
@@ -85,12 +146,12 @@ void init_partition_arrays()
 
 void fill_partition_arrays()
 {
-  int b,i;
+  int b,i,j;
   int n=part_len;
   for(b=TURN+1; b<n; ++b){
     for(i=1; i<=n-b; ++i){
-      int j=i+b;
-      
+      j=i+b;
+         
       // Auxillary array
       calc_s1(i,j);
       calc_s2(i,j);
@@ -103,6 +164,7 @@ void fill_partition_arrays()
 
       calc_upm(i,j);
       calc_up(i,j);
+      
       calc_ud(i,j);
       calc_u(i,j);
     }
@@ -157,7 +219,7 @@ void create_partition_arrays()
 
 void free_partition_arrays()
 {
-  int len = part_len + 1;
+  int len = part_len + 2;
   freeTwoD(u,len,len);
   freeTwoD(up,len,len);
   freeTwoD(upm,len,len);
@@ -175,24 +237,29 @@ void calc_upm(int i, int j){
 	int l,h;
 	double quadraticSum = 0;
 	
-	for(l=i+2; l<j; ++l){
-		p_val += (up[i+1][l] * exp((-1)*(a+2*c+auPenalty(i+1,l))/RT) * 
-																		(exp((-1)*(Ed3(i+1,l,l+1)+b)/RT) * u1[l+2][j-1] + u1d[l+1][j-1]));
-	}
-	
-	for(l=i+3; l<j; ++l){
-		p_val += (up[i+2][l]*exp((-1)*(a+2*c+b+Ed3(i,j,i+1)+auPenalty(i+2,l))/RT) * 
-																		(exp((-1)*(Ed3(i+2,l,l+1)+b)/RT)*u1[l+2][j-1] + u1d[l+1][j-1]));
-	}
-	
-	for(h=i+3; h<j-1; ++h){
-		quadraticSum += (s2[h][j] * exp((-1)*(a+2*c+(h-i-1)*b)/RT));	
-	}
-	quadraticSum *= exp((-1)*Ed3(i,j,i+1)/RT);
-	
-	p_val += quadraticSum;
-	
-	upm[i][j] = p_val;
+  if (canPair(RNA[i],RNA[j]) && j-i > TURN)
+  {
+   for(l=i+2; l<j; ++l){
+      p_val += (up[i+1][l] * exp((-1)*(a+2*c+auPenalty(i+1,l))/RT) * 
+          (exp((-1)*(Ed3(i+1,l,l+1)+b)/RT) * u1[l+2][j-1] + u1d[l+1][j-1]));
+    }
+
+    for(l=i+3; l<j; ++l){
+      p_val += (up[i+2][l]*exp((-1)*(a+2*c+b+Ed3(i,j,i+1)+auPenalty(i+2,l))/RT) * 
+          (exp((-1)*(Ed3(i+2,l,l+1)+b)/RT)*u1[l+2][j-1] + u1d[l+1][j-1]));
+    }
+
+    for(h=i+3; h<j-1; ++h){
+      quadraticSum += (s2[h][j] * exp((-1)*(a+2*c+(h-i-1)*b)/RT));	
+    }
+    quadraticSum *= exp((-1)*Ed3(i,j,i+1)/RT);
+
+    p_val += quadraticSum;
+    upm[i][j] = p_val;
+  }
+  else {
+    upm[i][j] = 0;   
+  }
 }
 
 void calc_u1(int i, int j){
@@ -237,13 +304,16 @@ void calc_u(int i, int j)
 	for (ctr = i+1; ctr < j-1; ++ctr) {
 		uval = uval + s1[ctr][j];
 	}
+	u[i][j] = uval;
 }
 
 void calc_ud(int i, int j)
 {
 	int l;
+  double udij = 0;
 
-	for (l = i+1; l < j; ++l) {
+	for (l = i+1; l < j; ++l) 
+  {
 		double val1, val2, val3;
 		val1 = up[i][l];
 		val1 = val1 * exp(-auPenalty(i,l) / RT);
@@ -252,24 +322,39 @@ void calc_ud(int i, int j)
 		val2 = val2 * exp(-Ed3(i,l,l+1)/RT);
 
 		val3 = ud[l+1][j];
-		val2 = val2 + up[l+1][j] * exp( -auPenalty(l+1,j) / RT );
+		val3 = val3 + up[l+1][j] * exp( -auPenalty(l+1,j) / RT );
 
-		ud[i][j] = ud[i][j] + (val1 * val2);
+		udij += (val1 * (val2 + val3));
 	}
+  ud[i][j]  = udij;
 }
 
 void calc_up(int i, int j)
 {
-	double up_val = 0.0;
- int h,l;
+  double up_val = 0.0;
+  int p,q;
 
-	for (h = i+1; h < j-1; ++h) {
-		for (l = h+1; l < j; ++l) {
-			up_val = up[h][l] * exp(-eL(i,j,h,l)/RT);
-		}
-	}
-	up_val = up_val * exp(-Ed3(i,j,i+1)/RT);
-	up_val = up_val + exp(-eH(i,j)/RT );
-	up_val = up_val + exp(-eS(i,j)/RT ) * up[i+1][j-1];
-	up_val = up_val + upm[i][j];
+  if (canPair(RNA[i],RNA[j]) && j-i > TURN)
+  {
+    for (p = i+1; p <= MIN(j-2-TURN,i+MAXLOOP+1) ; p++) {
+      int minq = j-i+p-MAXLOOP-2;
+      if (minq < p+1+TURN) minq = p+1+TURN;
+      int maxq = (p==(i+1))?(j-2):(j-1);
+
+      for (q = minq; q <= maxq; q++) {
+        if (canPair(p,q)==0) continue;
+        up_val += (up[p][q] * exp(-eL(i,j,p,q)/RT));
+      }
+    }
+
+    up_val = up_val * exp(-Ed3(i,j,i+1)/RT);
+    up_val = up_val + exp(-eH(i,j)/RT );
+    up_val = up_val + exp(-eS(i,j)/RT ) * up[i+1][j-1];
+    up_val = up_val + upm[i][j];
+
+    up[i][j] = up_val;
+  }
+  else  {
+    up[i][j] = 0;   
+  }
 }
