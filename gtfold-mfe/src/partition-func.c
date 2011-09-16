@@ -73,12 +73,12 @@ void init_partition_arrays()
     s1[i][i+4] = 0;
     s2[i][i+4] = 0;
   }
-  for(i=1; i<n; ++i){
+  for(i=1; i<=n; ++i){
     u[i+1][i] = 1;
     u1[i+1][i] = 0;
     u1d[i+1][i] = 0;
   }
-  for(i=1; i<n-1; i++){
+  for(i=1; i<=n-1; i++){
     u1[i+2][i] = 0;
   }
 }
@@ -87,18 +87,20 @@ void fill_partition_arrays()
 {
   int b,i;
   int n=part_len;
-  for(b=1; b<n; ++b){
+  for(b=TURN+1; b<n; ++b){
     for(i=1; i<=n-b; ++i){
       int j=i+b;
       calc_s1(i,j);
       calc_s2(i,j);
       calc_s3(i,j);
+      /*
       calc_u1d(i,j);
       calc_u1(i,j);
       calc_upm(i,j);
       calc_up(i,j);
       calc_ud(i,j);
       calc_u(i,j);
+      */
     }
   }
 }
@@ -137,7 +139,7 @@ void calc_s3(int h, int j)
 
 void create_partition_arrays()
 {
-  int len = part_len + 1;						
+  int len = part_len + 2;						
   u = mallocTwoD(len,len);
   up = mallocTwoD(len,len);
   upm = mallocTwoD(len,len);
