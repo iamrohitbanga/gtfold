@@ -47,9 +47,11 @@ void trace(int len) {
 	printf("\n");
 	
 	traceW(len);
-	printf("- sum of energy of Loops:   	  %12.2f kcal/mol\n", total_en/100.0);
-	printf("- sum of energy of External Loop: %12.2f kcal/mol\n", total_ex/100.0);
-	return;
+  if (g_verbose == 1) {
+    printf("- sum of energy of Loops:   	  %12.2f kcal/mol\n", total_en/100.0);
+    printf("- sum of energy of External Loop: %12.2f kcal/mol\n", total_ex/100.0);
+  }
+  return;
 }
 
 void traceW(int j) {

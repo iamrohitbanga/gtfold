@@ -19,6 +19,8 @@ bool UNAMODE = false;
 bool RNAMODE = false;
 bool b_prefilter = false;
 bool CALC_PART_FUNC = false;
+bool RND_SAMPLE = false;
+bool PF_COUNT_MODE = false;
 
 string seqfile = "";
 string constraintsFile = "";
@@ -30,6 +32,7 @@ string outputDir = "";
 string shapeFile = "";
 string paramDir; // default value
 
+int num_rnd = 0;
 int dangles=-1;
 int prefilter1=2;
 int prefilter2=2;
@@ -41,6 +44,8 @@ int contactDistance = -1;
 /**
  * Print the help message and quit.
  */
+
+/*
 void help() {
     printf("Usage: gtfold [OPTION]... FILE\n\n");
 
@@ -72,6 +77,7 @@ void help() {
     printf("\nBETA OPTIONS\n");
     printf("   --bpp                Calculate base pair probabilities.\n");
     printf("   --partition          Calculate the partition function.\n");
+    printf("   --pf_count          Calculate the structure count using partition function and zero energy value.\n");
     printf("   --subopt NUM         Calculate suboptimal structures within NUM kcal/mol\n");
     printf("                        of the MFE. (Uses -d 2 treatment of dangling energies.)\n");
     printf("   -s, --useSHAPE FILE  Use SHAPE constraints from FILE.\n");      
@@ -88,10 +94,12 @@ void help() {
     printf("\tAll other values for INT are ignored.\n");
     exit(-1);
 }
+*/
 
 /**
  * Parse the options from argc and argv and save them into global state.
  */
+/*
 void parse_options(int argc, char** argv) {
   int i;
 
@@ -184,6 +192,15 @@ void parse_options(int argc, char** argv) {
           help();
       } else if (strcmp(argv[i],"--partition") == 0) {
         CALC_PART_FUNC = true;
+      } else if (strcmp(argv[i],"--pf_count") == 0) {
+        CALC_PART_FUNC = true;
+	PF_COUNT_MODE = true;
+      }  else if (strcmp(argv[i],"--sample") == 0) {
+        RND_SAMPLE = true;
+        if(i < argc)
+          num_rnd = atoi(argv[++i]);
+        else
+          help();
       }
       else if (strcmp(argv[i], "--useSHAPE") == 0){
         if( i < argc){
@@ -239,12 +256,13 @@ void parse_options(int argc, char** argv) {
   bppOutFile += outputPrefix;	
   bppOutFile += "_bpp.txt";	
 }
-
+*/
 /**
  * Prints the run configuration for this run.
  *
  * The lines that start with a '-' are normal options, the '+' are beta options.
  */
+/*
 void printRunConfiguration(string seq) {
 	bool standardRun = true;
 
@@ -307,3 +325,4 @@ void printRunConfiguration(string seq) {
 	printf("- sequence length: %d\n", (int)seq.length());
 	printf("- output file: %s\n", outputFile.c_str());
 }
+*/
